@@ -1,4 +1,8 @@
+import CubeField from "@/components/CubeField";
 import Footer from "@/components/Footer";
+import GradientField from "@/components/GradientField";
+import Portal from "@/components/Portal";
+import Teaser from "@/components/Teaser";
 import PosterGallery from "@/components/PosterGallery";
 import Stage from "@/components/Stage";
 import { contact, extraSteps, marquee, portfolio, posters, process, scenes, values } from "@/data/content";
@@ -8,24 +12,28 @@ const marqueeLoop = [...marquee, ...marquee];
 export default function Home() {
   return (
     <>
-      <section className="hero">
-        <div className="hero-bg" aria-hidden="true" />
-        <div className="wrap">
-          <p className="eyebrow">Produtora audiovisual · Pós-produção</p>
-          <h1>Damos <em>forma</em> e <em>movimento</em> ao seu conteúdo.</h1>
-          <p className="lead">
-            Criamos conteúdos que atraem, inspiram e motivam pessoas. Edição, motion, cor e som para quem quer uma cara
-            profissional — e, se precisar, também cuidamos da produção.
-          </p>
-          <div className="actions">
-            <a className="btn" href="#contato">Pedir orçamento</a>
-            <a className="btn btn-ghost" href="#portfolio">Ver trabalhos</a>
-          </div>
-        </div>
-        <div className="hero-cube" aria-hidden="true">
-          <div className="big-cube"><i /><i /><i /></div>
-        </div>
-      </section>
+      <Portal
+        base={
+          <>
+            <GradientField />
+            <CubeField />
+            <div className="hero-copy">
+              <p className="eyebrow">Produtora audiovisual · Pós-produção</p>
+              <h1>Damos <em>forma</em> e <em>movimento</em> ao seu conteúdo.</h1>
+              <p className="lead">
+                Criamos conteúdos que atraem, inspiram e motivam pessoas. Edição, motion, cor e som — e, se precisar,
+                também cuidamos da produção.
+              </p>
+              <div className="actions">
+                <a className="btn" href="#contato">Pedir orçamento</a>
+                <a className="btn btn-ghost" href="#universo">Ver o universo</a>
+              </div>
+              <p className="scroll-hint" aria-hidden="true">Role para entrar ↓</p>
+            </div>
+          </>
+        }
+        reveal={<Teaser />}
+      />
 
       <section className="marquee" aria-hidden="true">
         <div className="track">
@@ -37,7 +45,7 @@ export default function Home() {
 
       <Stage scenes={scenes} />
 
-      <section className="section also-sec">
+      <section className="section also-sec paper t-lav">
         <div className="wrap">
           <div className="also reveal">
             <h3>E, se solicitado, as demais etapas</h3>
@@ -50,7 +58,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="processo" className="section dark">
+      <section id="processo" className="section paper t-lav">
         <div className="wrap">
           <p className="eyebrow">Como trabalhamos</p>
           <h2 className="reveal">Do material bruto à entrega final.</h2>
@@ -66,7 +74,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="portfolio" className="section">
+      <section id="portfolio" className="section paper t-black">
         <div className="wrap">
           <p className="eyebrow">Portfólio</p>
           <h2 className="reveal">Trabalhos selecionados.</h2>
@@ -82,7 +90,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="universo" className="section universe">
+      <section id="universo" className="section universe paper t-black">
         <div className="wrap">
           <p className="eyebrow">Universo Trills</p>
           <h2 className="reveal">Um universo possível.</h2>
@@ -94,7 +102,10 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="sobre" className="section dark about">
+      <section id="sobre" className="section about paper t-lav">
+        <svg className="about-blob" viewBox="0 0 600 600" aria-hidden="true" focusable="false">
+          <path fill="#F9E267" d="M300 40C410 20 520 90 545 200C575 320 520 360 540 450C555 530 450 590 340 565C250 545 210 585 120 540C40 500 60 420 80 350C100 280 30 230 80 150C130 70 220 60 300 40Z" />
+        </svg>
         <div className="wrap two">
           <div>
             <p className="eyebrow">Sobre a Trills</p>
@@ -114,7 +125,8 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="contato" className="section contact">
+      <section id="contato" className="section contact paper">
+        <GradientField variant="dusk" />
         <div className="wrap two">
           <div>
             <p className="eyebrow">Contato</p>

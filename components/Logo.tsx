@@ -1,16 +1,5 @@
-const cube = (
-  <span className="cube" aria-hidden="true">
-    <i />
-    <i />
-    <i />
-  </span>
-);
+import Image from "next/image";
 
-export default function Logo() {
-  return (
-    <>
-      {cube}
-      <span className="wordmark">Trills</span>
-    </>
-  );
+export default function Logo({ height = 34 }: { height?: number }) {
+  return <Image src="/brand/logo-light.png" alt="Trills" width={Math.round(height * 3.99)} height={height} priority />;
 }

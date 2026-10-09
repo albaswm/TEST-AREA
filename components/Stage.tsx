@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { CSSProperties, PointerEvent } from "react";
 import type { Scene } from "@/data/content";
+import GradientField from "./GradientField";
 
 type Phase = "idle" | "in" | "out";
 
@@ -111,7 +112,7 @@ export default function Stage({ scenes }: { scenes: readonly Scene[] }) {
         if (e.key === "ArrowLeft") go(curRef.current - 1);
       }}
     >
-      <div className="stage-bg" aria-hidden="true" />
+      <GradientField variant="dusk" />
       <p className="eyebrow stage-eyebrow">O que fazemos</p>
 
       <div className="scene-copy">
@@ -129,7 +130,7 @@ export default function Stage({ scenes }: { scenes: readonly Scene[] }) {
 
       <div className="cube3d" aria-hidden="true">
         <div className="cube3d-float">
-          <div className="cube3d-inner">
+          <div className="cube3d-inner glass">
             <i /><i /><i /><i /><i /><i />
           </div>
         </div>
