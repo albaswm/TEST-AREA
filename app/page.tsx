@@ -88,7 +88,7 @@ export default function Home() {
           <h2 className="reveal">Um universo possível.</h2>
           <p className="universe-text reveal">
             O cubo é a nossa referência-chave: a câmara obscura, os mundos improváveis de Escher e a força da união entre
-            criatividade, conhecimento e parcerias. Estes posters são a Trills em forma de imagem.
+            criatividade, conhecimento e parcerias. Estes posters são a Trills em forma de imagem: guiar o conteúdo, adequar o formato e conduzir a narrativa.
           </p>
           <PosterGallery posters={posters} />
         </div>

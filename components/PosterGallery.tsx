@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
+import type { PointerEvent } from "react";
 import type { Poster } from "@/data/content";
 
 export default function PosterGallery({ posters }: { posters: readonly Poster[] }) {
@@ -19,14 +20,32 @@ export default function PosterGallery({ posters }: { posters: readonly Poster[] 
   const step = (dir: number) => setOpen((i) => (i === null ? i : (i + dir + total) % total));
   const current = open === null ? null : posters[open];
 
+  // inclinação 3D via CSS vars no próprio elemento: sem estado, sem re-render
+  const tilt = (e: PointerEvent<HTMLButtonElement>) => {
+    const el = e.currentTarget;
+    const r = el.getBoundingClientRect();
+    el.style.setProperty("--tx", ((e.clientX - r.left) / r.width - 0.5) * 12 + "deg");
+    el.style.setProperty("--ty", ((e.clientY - r.top) / r.height - 0.5) * -12 + "deg");
+  };
+  const untilt = (e: PointerEvent<HTMLButtonElement>) => {
+    e.currentTarget.style.removeProperty("--tx");
+    e.currentTarget.style.removeProperty("--ty");
+  };
+
   return (
     <>
       <ul className="posters">
         {posters.map((p, i) => (
           <li key={p.id} className="reveal">
-            <button className={`poster poster-${p.id}`} onClick={() => setOpen(i)} aria-label={`Ampliar: ${p.title}`}>
+            <button
+              className={`poster poster-${p.id}`}
+              onClick={() => setOpen(i)}
+              onPointerMove={tilt}
+              onPointerLeave={untilt}
+              aria-label={`Ampliar: ${p.title}`}
+            >
               {p.src ? (
-                <Image src={p.src} alt={p.alt} fill sizes="(max-width: 820px) 50vw, 25vw" />
+                <Image src={p.src} alt={p.alt} fill sizes="(max-width: 820px) 72vw, 360px" />
               ) : (
                 <span className="poster-ph" aria-hidden="true"><i /><i /><i /></span>
               )}

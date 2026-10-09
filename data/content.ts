@@ -46,16 +46,30 @@ export type Poster = {
   series: string;
   title: string;
   alt: string;
-  /** caminho em /public (ex.: "/posters/humanizacao-1.webp"); sem src mostra o espaço reservado */
+  /** caminho em /public (ex.: "/posters/x.webp"); sem src mostra o espaço reservado */
   src?: string;
 };
 
-// TODO: preencher `src` quando as imagens otimizadas forem adicionadas em public/posters/
 export const posters: readonly Poster[] = [
-  { id: "hum-1", series: "Humanização", title: "Humanização 1", alt: "Poster Trills — série Humanização, versão 1" },
-  { id: "hum-2", series: "Humanização", title: "Humanização 2", alt: "Poster Trills — série Humanização, versão 2" },
-  { id: "hum-3", series: "Humanização", title: "Humanização 3", alt: "Poster Trills — série Humanização, versão 3" },
-  { id: "mqe-1", series: "Mais que edição", title: "Mais que edição", alt: "Poster Trills — Mais que edição" },
-  { id: "mqe-2", series: "Mais que edição", title: "Mais que edição II", alt: "Poster Trills — Mais que edição, segunda versão" },
-  { id: "mural", series: "Mural", title: "Mural", alt: "Mural Trills" },
+  {
+    id: "mais-que-edicao",
+    series: "Poster · 2021",
+    title: "Mais do que edição, é sobre orientar.",
+    alt: "Poster Trills: astronauta flutuando entre três cubos translúcidos iridescentes, com o texto “Mais do que edição, é sobre orientar.” e o logo da Trills",
+    src: "/posters/mais-que-edicao.webp",
+  },
+  {
+    id: "guiar-textura",
+    series: "Poster · 2021",
+    title: "Guiar o conteúdo, adequar o formato & conduzir a narrativa.",
+    alt: "Poster Trills sobre papel colado escuro: hexágonos em forma de cubo com imagens de edição, câmera, cosmos e astronauta, e o texto “Guiar o conteúdo, adequar o formato & conduzir a narrativa.”",
+    src: "/posters/guiar-textura.webp",
+  },
+  {
+    id: "guiar-limpo",
+    series: "Poster · 2021",
+    title: "Guiar o conteúdo — versão limpa",
+    alt: "Poster Trills em fundo preto liso: cubo de hexágonos com imagens de edição, câmera, cosmos e astronauta, e o texto “Guiar o conteúdo, adequar o formato & conduzir a narrativa.”",
+    src: "/posters/guiar-limpo.webp",
+  },
 ];
