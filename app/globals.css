@@ -1,8 +1,8 @@
 /* Trills — paleta e tipografia conforme Brandbook */
-/* Fontes da marca: quando tiver os arquivos, coloque em public/fonts/ e acrescente
-   url("/fonts/Grifter-Bold.otf") e url("/fonts/HelveticaNeue.ttf") nos src abaixo. */
-@font-face { font-family: "Grifter"; src: local("Grifter Bold"), local("Grifter"); font-weight: 700; font-display: swap; }
-@font-face { font-family: "Helvetica Neue Local"; src: local("Helvetica Neue"), local("HelveticaNeue"); font-display: swap; }
+/* Fontes da marca (brandbook): títulos Grifter Bold, textos Helvetica Neue Regular.
+   ATENÇÃO: confirmar licença de uso web antes de publicar (ver README). */
+@font-face { font-family: "Grifter"; src: url("/fonts/Grifter-Bold.woff2") format("woff2"); font-weight: 700; font-display: swap; }
+@font-face { font-family: "Helvetica Neue Local"; src: url("/fonts/HelveticaNeue.woff2") format("woff2"); font-weight: 400; font-display: swap; }
 
 :root {
   --orange: #FF8A3D; --blue: #03257E; --magenta: #DA1984; --yellow: #F9E267; --purple: #2E1A47; --green: #025F1D;
