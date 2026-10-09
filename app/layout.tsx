@@ -23,19 +23,26 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="pt-BR" suppressHydrationWarning>
       <head>
-        {/* Só com JS e sem movimento reduzido: o cabeçalho nasce oculto na abertura (sem flash) e a seção ganha o pin.
-            Sem JS, ou com prefers-reduced-motion, o site mostra o personagem estático e o cabeçalho visível. */}
+        {/* Só com JS: sem movimento reduzido a abertura ganha o pin (hero-active) e o cabeçalho nasce oculto (sem flash);
+            com movimento reduzido a abertura é estática (hero-still) e o cabeçalho só aparece depois da primeira tela.
+            As texturas de papel (.tex) só entram depois do carregamento, para não disputar banda com a abertura.
+            Sem JS: abertura estática e o cabeçalho fica oculto até a rolagem (animation-timeline, ver <noscript>). */}
         <script
           dangerouslySetInnerHTML={{
             __html:
-              "try{if(!matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('hero-active')}catch(e){}",
+              "try{var d=document.documentElement;d.classList.add(matchMedia('(prefers-reduced-motion: reduce)').matches?'hero-still':'hero-active');addEventListener('load',function(){setTimeout(function(){d.classList.add('tex')},900)})}catch(e){}",
           }}
         />
       </head>
       <body>
         <noscript>
-          <style>{".reveal{opacity:1!important;transform:none!important}"}</style>
+          <style>
+            {".reveal{opacity:1!important;transform:none!important}.paper::before{background-image:url(/tex/wrinkle.webp)}.paper::after{background-image:url(/tex/grain.webp)}" +
+              "@keyframes hs-nav-scroll{from{opacity:0;translate:0 -100%}to{opacity:1;translate:0 0}}" +
+              "@supports (animation-timeline:scroll()){.nav{animation:hs-nav-scroll linear both;animation-timeline:scroll(root);animation-range:40svh 80svh}}"}
+          </style>
         </noscript>
+        <a className="skip" href="#servicos">Pular para o conteúdo</a>
         <Header />
         <main>{children}</main>
         <RevealObserver />

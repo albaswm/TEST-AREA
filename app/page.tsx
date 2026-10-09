@@ -17,7 +17,7 @@ export default function Home() {
         gradient={<LiveGradient />}
         cubesBack={<HeroCubes layer="back" />}
         cubesFront={<HeroCubes layer="front" />}
-        space={<SpaceScene density={1.6} />}
+        space={<SpaceScene density={1.3} />}
       />
 
       <section className="marquee" aria-hidden="true">

@@ -3,13 +3,14 @@
 import { useEffect, useRef } from "react";
 
 /**
- * O "outro fundo" revelado pela janela do rosto: espaço profundo azul-esverdeado (as cores vêm
- * do interior da janela do pôster), campo de estrelas em canvas (3 camadas, parallax, twinkle,
- * deriva), faixa de Via Láctea e vinheta.
+ * O "outro fundo" revelado pela janela do rosto: espaço profundo (teal, azul e magenta da marca), campo de
+ * estrelas em canvas (4 camadas com parallax do ponteiro e "voo" em profundidade conforme a janela cresce,
+ * twinkle, deriva), faixa de Via Láctea assada em webp (CSS) e vinheta.
  *
  * Engenharia: nenhum estado React (tudo em refs), 1 laço rAF que só roda enquanto o componente
  * está visível e a aba ativa, DPR <= 2, limpeza completa no unmount, prefers-reduced-motion =
- * desenho estático. Lê --mx/--my (-1..1) do [data-hero-root] mais próximo.
+ * desenho estático. Lê --hmx/--hmy (ponteiro, -1..1) e --hze (zoom, 0..1+) do [data-hero-root] mais próximo
+ * (propriedades registradas sem herança, escritas só na raiz: custo de estilo nulo para o resto da árvore).
  */
 
 type Props = {
@@ -43,7 +44,8 @@ type Layer = {
   sp: Float32Array; // velocidade do twinkle (rad/s)
   tw: Float32Array; // profundidade do twinkle (0 = estrela estável)
   groups: number[]; // índice final (exclusivo) de cada grupo de cor; as estrelas são ordenadas por cor
-  par: number; // parallax (fração da largura por unidade de --mx)
+  par: number; // parallax (fração da largura por unidade de --hmx)
+  zoom: number; // quanto a camada se afasta do centro por unidade de --hze (profundidade)
   vx: number; // deriva (fração do contêiner por segundo)
   vy: number;
   glow: boolean; // usa sprite com halo
@@ -69,103 +71,13 @@ function bandGeom(W: number, H: number) {
   return { p0, p1, bw };
 }
 
-// ---------------------------------------------------------------- ruído barato (value noise)
-function hash2(ix: number, iy: number, seed: number) {
-  let h = Math.imul(ix, 374761393) ^ Math.imul(iy, 668265263) ^ Math.imul(seed, 2147483647);
-  h = Math.imul(h ^ (h >>> 13), 1274126177);
-  return ((h ^ (h >>> 16)) >>> 0) / 4294967296;
-}
-function vnoise(x: number, y: number, seed: number) {
-  const ix = Math.floor(x);
-  const iy = Math.floor(y);
-  const fx = x - ix;
-  const fy = y - iy;
-  const ux = fx * fx * (3 - 2 * fx);
-  const uy = fy * fy * (3 - 2 * fy);
-  const a = hash2(ix, iy, seed);
-  const b = hash2(ix + 1, iy, seed);
-  const c = hash2(ix, iy + 1, seed);
-  const d = hash2(ix + 1, iy + 1, seed);
-  return a + (b - a) * ux + (c - a) * uy + (a - b - c + d) * ux * uy;
-}
-function fbm(x: number, y: number, seed: number, oct: number) {
-  let s = 0;
-  let amp = 0.5;
-  let f = 1;
-  let norm = 0;
-  for (let i = 0; i < oct; i++) {
-    s += amp * vnoise(x * f, y * f, seed + i * 17);
-    norm += amp;
-    amp *= 0.5;
-    f *= 2.03;
-  }
-  return s / norm;
-}
-
-/** Pinta a faixa da Via Láctea num canvas pequeno (o CSS amplia com suavização). */
-function paintMilky(cv: HTMLCanvasElement, W: number, H: number) {
-  const long = 260;
-  const k = long / Math.max(W, H);
-  const w = Math.max(16, Math.round(W * 1.1 * k));
-  const h = Math.max(16, Math.round(H * 1.1 * k));
-  cv.width = w;
-  cv.height = h;
-  const ctx = cv.getContext("2d");
-  if (!ctx) return;
-  const img = ctx.createImageData(w, h);
-  const { p0, p1, bw } = bandGeom(W, H);
-  // o canvas cobre o contêiner com 5% de sobra em cada lado
-  const toPx = (nx: number, ny: number) => [(nx * 1.0 + 0.05) * (w / 1.1), (ny * 1.0 + 0.05) * (h / 1.1)];
-  const [ax, ay] = toPx(p0[0], p0[1]);
-  const [bx, by] = toPx(p1[0], p1[1]);
-  const dx = bx - ax;
-  const dy = by - ay;
-  const len = Math.hypot(dx, dy);
-  const ux = dx / len;
-  const uy = dy / len;
-  const bwc = bw * k; // meia-largura em px do canvas
-  const data = img.data;
-  for (let j = 0; j < h; j++) {
-    for (let i = 0; i < w; i++) {
-      const vx = i - ax;
-      const vy = j - ay;
-      const t = vx * ux + vy * uy;
-      let perp = vx * uy - vy * ux;
-      const sx = i / bwc;
-      const sy = j / bwc;
-      // deforma o eixo para a borda ficar irregular, como poeira estelar
-      perp += (fbm(sx * 0.9 + 3.1, sy * 0.9 + 7.7, 11, 3) - 0.5) * bwc * 1.5;
-      const q = perp / bwc;
-      const core = Math.exp(-q * q * 1.25);
-      const halo = Math.exp(-q * q * 0.28) * 0.35;
-      // variação de brilho ao longo da faixa + poeira
-      const along = 0.7 + 0.5 * fbm(t / bwc * 0.55 + 1.7, q * 0.4, 23, 3);
-      const cloud = 0.62 + 0.7 * fbm(sx * 2.4 + 9.2, sy * 2.4 + 1.3, 31, 4);
-      // veios escuros (poeira) cruzando o núcleo
-      const lane = Math.max(0, fbm(t / bwc * 1.3 + 4.4, q * 1.6 + 2.2, 47, 3) - 0.58) * 2.2;
-      let d = (core * along + halo) * cloud * (1 - Math.min(0.75, lane));
-      // some suavemente nas pontas da faixa
-      const e = t / len;
-      d *= Math.min(1, Math.max(0, e + 0.1) * 6) * Math.min(1, Math.max(0, 1.1 - e) * 6);
-      const alpha = Math.min(0.3, d * 0.27);
-      const warm = fbm(sx * 1.1 + 5.5, sy * 1.1 + 8.1, 59, 2);
-      const o = (j * w + i) * 4;
-      data[o] = 118 + 34 * warm;
-      data[o + 1] = 130 + 8 * warm;
-      data[o + 2] = 158 - 20 * warm;
-      data[o + 3] = alpha * 255;
-    }
-  }
-  ctx.putImageData(img, 0, 0);
-}
-
 // ---------------------------------------------------------------- estrelas
 function makeLayer(
   rand: () => number,
   count: number,
   opts: {
     rMin: number; rMax: number; aMin: number; aMax: number; twFrac: number; par: number; speed: number;
-    glow?: boolean; band?: { W: number; H: number } | null;
+    glow?: boolean; band?: { W: number; H: number } | null; zoom: number;
   },
 ): Layer {
   const n = count;
@@ -217,6 +129,7 @@ function makeLayer(
     ph: new Float32Array(n), sp: new Float32Array(n), tw: new Float32Array(n),
     groups: [0, 0, 0, 0],
     par: opts.par,
+    zoom: opts.zoom,
     vx: opts.speed,
     vy: opts.speed * -0.32,
     glow: !!opts.glow,
@@ -251,7 +164,6 @@ function makeSprites(): HTMLCanvasElement[] {
 export default function SpaceScene({ className, density = 1, milkyWay = true }: Props) {
   const rootRef = useRef<HTMLDivElement>(null);
   const starsRef = useRef<HTMLCanvasElement>(null);
-  const milkyRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
     const root = rootRef.current;
@@ -259,7 +171,6 @@ export default function SpaceScene({ className, density = 1, milkyWay = true }: 
     if (!root || !cv) return;
     const ctx = cv.getContext("2d");
     if (!ctx) return;
-    const milky = milkyRef.current;
     const heroRoot = (root.closest("[data-hero-root]") as HTMLElement | null) ?? root;
     const heroStyle = getComputedStyle(heroRoot);
     const mql = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -277,6 +188,7 @@ export default function SpaceScene({ className, density = 1, milkyWay = true }: 
     let t0 = performance.now();
     let lastMx = 0;
     let lastMy = 0;
+    let lastZe = 0;
     let still = 0;
     let frame = 0;
     let disposed = false;
@@ -296,11 +208,12 @@ export default function SpaceScene({ className, density = 1, milkyWay = true }: 
       const nBand = Math.round(Math.min(1200, Math.max(300, area * 620)) * dn);
       const nMid = Math.round(Math.min(380, Math.max(90, area * 150)) * dn);
       const nNear = Math.round(Math.min(70, Math.max(18, area * 30)) * dn);
+      // 4 camadas em profundidade: ao crescer a janela (--hze) as próximas se afastam do centro mais rápido (voo)
       layers = [
-        makeLayer(rand, nFar, { rMin: 0.6, rMax: 1.0, aMin: 0.28, aMax: 0.72, twFrac: 0.3, par: 0.004, speed: 0.00035 }),
-        makeLayer(rand, milkyWay ? nBand : 0, { rMin: 0.55, rMax: 0.95, aMin: 0.3, aMax: 0.78, twFrac: 0.3, par: 0.005, speed: 0.00038, band: { W, H } }),
-        makeLayer(rand, nMid, { rMin: 0.95, rMax: 1.6, aMin: 0.45, aMax: 0.9, twFrac: 0.4, par: 0.011, speed: 0.0009 }),
-        makeLayer(rand, nNear, { rMin: 1.4, rMax: 2.5, aMin: 0.6, aMax: 1, twFrac: 0.55, par: 0.026, speed: 0.0019, glow: true }),
+        makeLayer(rand, nFar, { rMin: 0.6, rMax: 1.05, aMin: 0.3, aMax: 0.75, twFrac: 0.3, par: 0.004, speed: 0.00035, zoom: 0.1 }),
+        makeLayer(rand, milkyWay ? nBand : 0, { rMin: 0.55, rMax: 0.95, aMin: 0.3, aMax: 0.78, twFrac: 0.3, par: 0.005, speed: 0.00038, band: { W, H }, zoom: 0.14 }),
+        makeLayer(rand, nMid, { rMin: 0.95, rMax: 1.7, aMin: 0.5, aMax: 0.95, twFrac: 0.4, par: 0.011, speed: 0.0009, zoom: 0.42 }),
+        makeLayer(rand, nNear, { rMin: 1.5, rMax: 3.0, aMin: 0.65, aMax: 1, twFrac: 0.55, par: 0.028, speed: 0.0019, glow: true, zoom: 1.0 }),
       ];
     };
 
@@ -320,10 +233,7 @@ export default function SpaceScene({ className, density = 1, milkyWay = true }: 
         cv.width = pw;
         cv.height = ph;
       }
-      if (sizeChanged || layers.length === 0) {
-        build();
-        if (milky && milkyWay) paintMilky(milky, W, H);
-      }
+      if (sizeChanged || layers.length === 0) build();
       if (!sprites.length) sprites = makeSprites();
       draw(performance.now(), true);
       if (!ready) {
@@ -341,16 +251,18 @@ export default function SpaceScene({ className, density = 1, milkyWay = true }: 
     const draw = (now: number, force = false) => {
       if (!W || !layers.length) return;
       const t = reduce ? 0 : (now - t0) / 1000;
-      const mx = reduce ? 0 : readVar("--mx");
-      const my = reduce ? 0 : readVar("--my");
-      // com o ponteiro parado e sem forçar, desenha só 1 em cada 3 quadros (twinkle é lento)
+      const mx = reduce ? 0 : readVar("--hmx");
+      const my = reduce ? 0 : readVar("--hmy");
+      const ze = reduce ? 0 : readVar("--hze");
+      // com o ponteiro e o zoom parados e sem forçar, desenha só 1 em cada 3 quadros (twinkle é lento)
       if (!force) {
-        const moved = Math.abs(mx - lastMx) + Math.abs(my - lastMy) > 0.0004;
+        const moved = Math.abs(mx - lastMx) + Math.abs(my - lastMy) + Math.abs(ze - lastZe) > 0.0004;
         still = moved ? 0 : still + 1;
         if (still > 20 && frame++ % 3 !== 0) return;
       }
       lastMx = mx;
       lastMy = my;
+      lastZe = ze;
 
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, W, H);
@@ -358,6 +270,9 @@ export default function SpaceScene({ className, density = 1, milkyWay = true }: 
         if (!L.n) continue;
         const offX = -mx * L.par + t * L.vx;
         const offY = -my * L.par * (W / H) + t * L.vy;
+        const zs = 1 + ze * L.zoom; // voo em profundidade: a camada se afasta do centro
+        const hw = W / 2;
+        const hh = H / 2;
         let start = 0;
         for (let g = 0; g < 4; g++) {
           const end = L.groups[g];
@@ -368,15 +283,16 @@ export default function SpaceScene({ className, density = 1, milkyWay = true }: 
               let ny = L.y[i] + offY;
               nx -= Math.floor(nx);
               ny -= Math.floor(ny);
-              const px = nx * W;
-              const py = ny * H;
+              const px = (nx * W - hw) * zs + hw;
+              const py = (ny * H - hh) * zs + hh;
+              if (px < -8 || py < -8 || px > W + 8 || py > H + 8) continue;
               let a = L.a[i];
               const tw = L.tw[i];
               if (tw > 0 && !reduce) a *= 1 - tw * (0.5 + 0.5 * Math.sin(t * L.sp[i] + L.ph[i]));
-              const r = L.r[i];
+              const r = L.r[i] * (1 + (zs - 1) * 0.22);
               ctx.globalAlpha = a;
               if (L.glow) {
-                const s = r * 7;
+                const s = r * 5.6;
                 ctx.drawImage(sprites[g], px - s / 2, py - s / 2, s, s);
               } else {
                 ctx.fillRect(px - r / 2, py - r / 2, r, r);
@@ -436,7 +352,7 @@ export default function SpaceScene({ className, density = 1, milkyWay = true }: 
 
   return (
     <div ref={rootRef} className={className ? `sp ${className}` : "sp"} aria-hidden="true">
-      {milkyWay ? <canvas ref={milkyRef} className="sp-milky" /> : null}
+      {milkyWay ? <div className="sp-milky" /> : null}
       <canvas ref={starsRef} className="sp-stars" />
       <i className="sp-vignette" />
     </div>

@@ -6,10 +6,17 @@ import Logo from "./Logo";
 export default function Header() {
   const [open, setOpen] = useState(false);
   const close = () => setOpen(false);
+  // o destino #top é a abertura (seção alta e fixada): volta ao topo na hora, sem atravessar a sequência inteira
+  const toTop = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    close();
+    window.scrollTo({ top: 0, behavior: "instant" });
+    history.replaceState(null, "", "#top");
+  };
 
   return (
-    <header className="nav" id="top">
-      <a className="brand" href="#top" aria-label="Trills — início">
+    <header className="nav">
+      <a className="brand" href="#top" aria-label="Trills — início" onClick={toTop}>
         <Logo />
       </a>
       <button

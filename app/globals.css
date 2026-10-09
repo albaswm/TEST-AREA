@@ -235,8 +235,11 @@ body { background: var(--black); }
 /* ---- papel: textura amassada + grão sobre qualquer fundo ---- */
 .paper { position: relative; isolation: isolate; overflow: hidden; }
 .paper::before, .paper::after { content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 0; }
-.paper::before { background: url("/tex/wrinkle.webp") center / 1800px; mix-blend-mode: soft-light; opacity: .34; }
-.paper::after { background: url("/tex/grain.webp") center / 320px; mix-blend-mode: overlay; opacity: .32; }
+.paper::before { background: center / 1800px; mix-blend-mode: soft-light; opacity: .34; }
+.paper::after { background: center / 320px; mix-blend-mode: overlay; opacity: .32; }
+/* as texturas (430 KB) só entram depois do carregamento da abertura (classe .tex no <html>, posta por script) */
+html.tex .paper::before { background-image: url("/tex/wrinkle.webp"); }
+html.tex .paper::after { background-image: url("/tex/grain.webp"); }
 .paper > .wrap, .paper > .two { position: relative; z-index: 2; }
 .t-black::before { mix-blend-mode: overlay; opacity: .22; }
 .t-lav { background: linear-gradient(180deg, var(--lav1) 0%, var(--lav2) 36%, var(--lav3) 72%, var(--pink) 100%); color: var(--ink); }
@@ -281,12 +284,6 @@ body { background: var(--black); }
 .glass i:nth-child(4) { --a: 290deg; transform: rotateY(-90deg) translateZ(calc(var(--h) + var(--ex, 0px))); }
 .glass i:nth-child(5) { --a: 75deg; transform: rotateX(90deg) translateZ(calc(var(--h) + var(--ex, 0px))); }
 .glass i:nth-child(6) { --a: 250deg; transform: rotateX(-90deg) translateZ(calc(var(--h) + var(--ex, 0px))); }
-
-.dw { --h: calc(var(--s) * .5px); position: absolute; left: calc(var(--x) * 1%); top: calc(var(--y) * 1%); width: calc(var(--s) * 1px); height: calc(var(--s) * 1px); margin: calc(var(--s) * -.5px) 0 0 calc(var(--s) * -.5px);
-  filter: blur(calc(var(--b) * 1px)); opacity: var(--o); perspective: 800px; will-change: transform;
-  transform: translate3d(calc(var(--mx, 0) * var(--d) * -34px), calc(var(--my, 0) * var(--d) * -26px), 0) scale(calc(1 + var(--e, 0) * var(--d) * .9)); }
-.dcube { position: relative; width: 100%; height: 100%; animation: dspin calc(var(--spin) * 1s) linear infinite; animation-delay: calc(var(--delay) * 1s); }
-@keyframes dspin { from { transform: rotateX(var(--tilt)) rotateY(0deg); } to { transform: rotateX(var(--tilt)) rotateY(360deg); } }
 
 /* ---- faixa ---- */
 .marquee { background: #130F0C; color: transparent; padding: 20px 0; border-block: 1px solid rgba(255, 255, 255, .1); }
@@ -337,7 +334,6 @@ body { background: var(--black); }
 .footer .brand img { height: 40px; }
 
 @media (max-width: 820px) {
-  .dw { transform: scale(calc(1 + var(--e, 0) * var(--d) * .9)); }
   .about-blob { width: 150vw; left: -30%; }
 }
 @media (prefers-reduced-motion: reduce) {

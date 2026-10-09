@@ -2,9 +2,9 @@
    Fundos da abertura: LiveGradient (degradê vivo) e SpaceScene (o "outro fundo").
    Importe uma vez (ex.: import "./hero-bg.css") onde a abertura for montada.
 
-   Variáveis lidas por herança do elemento [data-hero-root] (todas opcionais):
-     --mx, --my   ponteiro suavizado, -1..1
-     --p          progresso da rolagem da abertura, 0..1
+   O movimento ligado ao ponteiro e à rolagem (translate/scale/opacity das manchas) é escrito em JS
+   (components/hero/HeroSequence.tsx) direto no elemento, lendo os parâmetros --par/--px/--py/--ps/--po/--o0 de cada
+   mancha: nada de custom property herdada mudando por quadro (isso recalculava o estilo de toda a abertura).
      --pa         intensidade do brilho que segue o cursor, 0..1 (padrão 1)
    Cores amostradas do pôster com PIL (medianas em regiões sem o personagem).
    ========================================================================== */
@@ -22,11 +22,19 @@
   .lg { container: lg / size; --u: 1cqmax; --cw: 1cqw; --ch: 1cqh; }
 }
 
-/* mancha: elipse que ocupa a caixa (closest-side) com queda suave, sem filter:blur */
-.lg-b {
+/* mancha = invólucro (.lg-p) + elipse (.lg-b). O invólucro carrega as variáveis, o parallax do ponteiro e o deslocamento da
+   rolagem (translate/scale/opacity escritos pelo JS: barato, só compositor). A elipse, com o gradiente caro de 11 paradas e a
+   deriva ociosa, nunca é recalculada por quadro (era o grosso do custo de estilo). */
+.lg-p {
   --x: 50%; --y: 50%; --w: 60%; --h: 60%; --c: 255 255 255; --a: 1;
-  --rot: 0deg; --par: 0; --px: 0; --py: 0; --ps: 0; --po: 0; --ax: 1; --ay: 1; --ar: 0deg; --as: 1;
+  --rot: 0deg; --par: 0; --px: 0; --py: 0; --ps: 0; --po: 0; --o0: 1; --ax: 1; --ay: 1; --ar: 0deg; --as: 1;
   --dur: 30s; --del: 0s;
+  position: absolute; inset: 0; pointer-events: none;
+  transform-origin: var(--x) var(--y);
+  opacity: var(--o0, 1);
+  will-change: transform, opacity;
+}
+.lg-b {
   position: absolute; left: calc(var(--x) - var(--w) / 2); top: calc(var(--y) - var(--h) / 2);
   width: var(--w); height: var(--h);
   background: radial-gradient(closest-side,
@@ -41,16 +49,10 @@
     rgb(var(--c) / calc(var(--a) * .06)) 80%,
     rgb(var(--c) / calc(var(--a) * .015)) 90%,
     rgb(var(--c) / 0) 100%);
-  /* parallax (ponteiro) + deslocamento da rolagem: translate/scale/opacity, só compositor */
-  translate:
-    calc(var(--mx, 0) * var(--par) * var(--u) * -1 + var(--p, 0) * var(--px) * var(--u))
-    calc(var(--my, 0) * var(--par) * var(--u) * -1 + var(--p, 0) * var(--py) * var(--u));
   rotate: var(--rot);
-  scale: calc(1 + var(--p, 0) * var(--ps));
-  opacity: calc(1 + var(--p, 0) * var(--po));
   /* deriva ociosa muito lenta */
   animation: lg-drift var(--dur) ease-in-out var(--del) infinite alternate;
-  will-change: transform, opacity;
+  will-change: transform;
 }
 @keyframes lg-drift {
   from { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); }
@@ -62,22 +64,22 @@
    contra o fundo do pôster (somente pixels sem o personagem), com o pôster esticado para 16:10. */
 .lg-olive   { --c: 198 162 80; --a: 1.0; --x: 13.5%; --y: 81.1%; --w: 104.2%; --h: 80.0%; --rot: -14.5deg; --par: 1.2; --po: -.3; --py: 3; --ax: 1.2; --ay: -1.4; --dur: 31s; --del: -6s; }
 .lg-orange  { --c: 233 138 74; --a: 1.0; --x: 6.0%; --y: 51.4%; --w: 102.7%; --h: 99.8%; --rot: 6.9deg; --par: 1.8; --px: 3; --py: -5; --ps: -.1; --po: -.12; --ax: 1.8; --ay: -1.6; --dur: 36s; --del: -11s; }
-.lg-coral   { --c: 240 98 64; --a: .8; --x: 9%; --y: 44%; --w: 84%; --h: 80%; --rot: 6.9deg; --par: 2.2; --px: 4; --py: -6; --ax: -1.4; --ay: 1.6; --dur: 29s; --del: -3s; opacity: calc(var(--p, 0) * .5); }
+.lg-coral   { --c: 240 98 64; --a: .8; --x: 9%; --y: 44%; --w: 84%; --h: 80%; --rot: 6.9deg; --par: 2.2; --px: 4; --py: -6; --ax: -1.4; --ay: 1.6; --dur: 29s; --del: -3s; --o0: 0; --po: .5; }
 .lg-violet  { --c: 98 44 112; --a: 1.0; --x: 100.5%; --y: 43.5%; --w: 74.1%; --h: 76.7%; --rot: -30.0deg; --par: 3; --py: 2; --ax: -1.6; --ay: 1.8; --dur: 38s; --del: -17s; }
 .lg-blue    { --c: 36 48 116; --a: 1.0; --x: 86.1%; --y: 18.9%; --w: 56.8%; --h: 148.1%; --rot: -30.0deg; --par: 3.6; --px: -3; --py: 6; --ps: .28; --ax: -1.2; --ay: 2; --dur: 34s; --del: -9s; }
 .lg-magenta { --c: 136 24 98; --a: 0.85; --x: 63.2%; --y: 8.2%; --w: 58.4%; --h: 80.2%; --rot: 30.0deg; --par: 2.6; --px: -4; --py: 5; --ps: .32; --ax: 1.8; --ay: 1.4; --ar: 3deg; --dur: 33s; --del: -14s; }
 .lg-hot     { --c: 156 20 112; --a: 0.78; --x: 76.3%; --y: 25.3%; --w: 71.5%; --h: 42.1%; --rot: 30.0deg; --par: 3.2; --px: -3; --py: 4; --ps: .5; --po: .25; --ax: -1.4; --ay: 1.2; --dur: 27s; --del: -5s; }
 
 /* cantos escuros do pôster: o inferior-esquerdo suaviza o oliva, o inferior-direito é preto */
-.lg-shade   { --c: 5 4 3; animation: none; will-change: auto; }
+.lg-shade   { --c: 5 4 3; will-change: auto; }
+.lg-shade .lg-b, .lg-glow .lg-b { animation: none; will-change: auto; }
 .lg-shade-l { --a: .36; --x: -2%; --y: 100%; --w: 42%; --h: 44%; }
 .lg-shade-r { --a: 0.95; --x: 99.1%; --y: 88.6%; --w: 30.0%; --h: 89.7%; --rot: -30.0deg; }
 
 /* brilho que segue o cursor */
 .lg-glow {
   --c: 255 176 150; --a: .15; --w: calc(58 * var(--u)); --h: calc(58 * var(--u));
-  translate: calc(var(--mx, 0) * 50 * var(--cw)) calc(var(--my, 0) * 50 * var(--ch));
-  scale: 1; opacity: var(--pa, 1); animation: none; will-change: transform;
+  opacity: var(--pa, 1);
 }
 @media (hover: none) { .lg-glow { display: none; } }
 
@@ -108,22 +110,26 @@
 
 /* -------------------------------------------------------------------------
    SpaceScene
-   Azul-esverdeado desaturado da janela do pôster: topo #2a343b, meio #2e3c44,
-   inferior #313442, Via Láctea #484f60.
+   Espaço profundo da janela do pôster, um pouco mais vivo e ligado à marca: teal escuro no alto, azul #03257E
+   no canto superior direito, magenta #DA1984 e um toque de laranja nas bordas de baixo/esquerda, Via Láctea
+   assada em webp (public/hero/milky-*.webp), camadas de estrelas em canvas e vinheta.
    ------------------------------------------------------------------------- */
 .sp {
   position: absolute; inset: 0; overflow: hidden; isolation: isolate; pointer-events: none;
   background:
-    linear-gradient(to bottom, transparent 62%, rgb(66 44 66 / .16) 100%),
-    radial-gradient(ellipse 95% 85% at 52% 36%, #2f3e46 0%, #2b383f 38%, #243038 72%, #1b242b 100%);
+    radial-gradient(ellipse 64% 50% at 12% 102%, rgb(218 25 132 / .40), rgb(218 25 132 / 0) 72%),
+    radial-gradient(ellipse 54% 62% at 102% -2%, rgb(3 37 126 / .70), rgb(3 37 126 / 0) 74%),
+    radial-gradient(ellipse 34% 30% at -2% 64%, rgb(255 138 61 / .20), rgb(255 138 61 / 0) 72%),
+    linear-gradient(176deg, #0a2b3b 0%, #0e2e4c 34%, #1a2360 68%, #2b1548 100%);
 }
 .sp-milky {
   position: absolute; inset: -5%; width: 110%; height: 110%; max-width: none;
+  background: url("/hero/milky-l.webp") center / 100% 100% no-repeat;
   opacity: 0; transition: opacity 1.8s ease;
-  translate: calc(var(--mx, 0) * -1.6%) calc(var(--my, 0) * -1.6%);
   animation: sp-drift 52s ease-in-out infinite alternate;
   will-change: transform;
 }
+@media (max-aspect-ratio: 1/1) { .sp-milky { background-image: url("/hero/milky-p.webp"); } }
 .sp-stars {
   position: absolute; inset: 0; width: 100%; height: 100%;
   opacity: 0; transition: opacity 1.4s ease;
@@ -131,7 +137,13 @@
 .sp[data-ready] .sp-milky, .sp[data-ready] .sp-stars { opacity: 1; }
 .sp-vignette {
   position: absolute; inset: 0;
-  background: radial-gradient(ellipse 80% 76% at 50% 46%, transparent 52%, rgb(7 10 13 / .5) 82%, rgb(5 8 10 / .78) 100%);
+  background: radial-gradient(ellipse 84% 80% at 50% 46%, transparent 56%, rgb(6 8 16 / .42) 84%, rgb(4 6 12 / .72) 100%);
+}
+/* grão fino para casar com o acabamento do pôster */
+.sp::after {
+  content: ""; position: absolute; inset: 0; opacity: .07; pointer-events: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n' x='0' y='0' width='100%' height='100%'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 1.6 -.45'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  background-size: 220px 220px;
 }
 @keyframes sp-drift {
   from { transform: rotate(-.7deg) scale(1.01) translate3d(-.6%, .4%, 0); }
