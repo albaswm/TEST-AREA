@@ -1,0 +1,142 @@
+/* ==========================================================================
+   Fundos da abertura: LiveGradient (degradê vivo) e SpaceScene (o "outro fundo").
+   Importe uma vez (ex.: import "./hero-bg.css") onde a abertura for montada.
+
+   Variáveis lidas por herança do elemento [data-hero-root] (todas opcionais):
+     --mx, --my   ponteiro suavizado, -1..1
+     --p          progresso da rolagem da abertura, 0..1
+     --pa         intensidade do brilho que segue o cursor, 0..1 (padrão 1)
+   Cores amostradas do pôster com PIL (medianas em regiões sem o personagem).
+   ========================================================================== */
+
+/* -------------------------------------------------------------------------
+   LiveGradient
+   ------------------------------------------------------------------------- */
+.lg {
+  --u: 1vmax; --cw: 1vw; --ch: 1vh;      /* sem container queries: unidades da viewport */
+  position: absolute; inset: 0; overflow: hidden; isolation: isolate; pointer-events: none;
+  background: #0b0907;                    /* preto do pôster (12,10,8) */
+  contain: strict;
+}
+@supports (container-type: size) {
+  .lg { container: lg / size; --u: 1cqmax; --cw: 1cqw; --ch: 1cqh; }
+}
+
+/* mancha: elipse que ocupa a caixa (closest-side) com queda suave, sem filter:blur */
+.lg-b {
+  --x: 50%; --y: 50%; --w: 60%; --h: 60%; --c: 255 255 255; --a: 1;
+  --par: 0; --px: 0; --py: 0; --ps: 0; --po: 0; --ax: 1; --ay: 1; --ar: 0deg; --as: 1;
+  --dur: 30s; --del: 0s;
+  position: absolute; left: calc(var(--x) - var(--w) / 2); top: calc(var(--y) - var(--h) / 2);
+  width: var(--w); height: var(--h);
+  background: radial-gradient(closest-side,
+    rgb(var(--c) / var(--a)) 0%,
+    rgb(var(--c) / calc(var(--a) * .97)) 10%,
+    rgb(var(--c) / calc(var(--a) * .88)) 20%,
+    rgb(var(--c) / calc(var(--a) * .73)) 30%,
+    rgb(var(--c) / calc(var(--a) * .56)) 40%,
+    rgb(var(--c) / calc(var(--a) * .39)) 50%,
+    rgb(var(--c) / calc(var(--a) * .25)) 60%,
+    rgb(var(--c) / calc(var(--a) * .14)) 70%,
+    rgb(var(--c) / calc(var(--a) * .06)) 80%,
+    rgb(var(--c) / calc(var(--a) * .015)) 90%,
+    rgb(var(--c) / 0) 100%);
+  /* parallax (ponteiro) + deslocamento da rolagem: translate/scale/opacity, só compositor */
+  translate:
+    calc(var(--mx, 0) * var(--par) * var(--u) * -1 + var(--p, 0) * var(--px) * var(--u))
+    calc(var(--my, 0) * var(--par) * var(--u) * -1 + var(--p, 0) * var(--py) * var(--u));
+  scale: calc(1 + var(--p, 0) * var(--ps));
+  opacity: calc(1 + var(--p, 0) * var(--po));
+  /* deriva ociosa muito lenta */
+  animation: lg-drift var(--dur) ease-in-out var(--del) infinite alternate;
+  will-change: transform, opacity;
+}
+@keyframes lg-drift {
+  from { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); }
+  to   { transform: translate3d(calc(var(--ax) * var(--u)), calc(var(--ay) * var(--u)), 0) rotate(var(--ar)) scale(var(--as)); }
+}
+
+/* --- composição em paisagem (padrão) --- */
+.lg-olive   { --c: 198 162 80;  --a: .94; --x: 0%;   --y: 106%; --w: 78%;  --h: 76%;  --par: 1.2; --po: -.45; --py: 3;  --ax: 1.2;  --ay: -1.4; --dur: 31s; --del: -6s; }
+.lg-orange  { --c: 233 138 74;  --a: .98; --x: 3%;   --y: 58%;  --w: 84%;  --h: 98%;  --par: 1.8; --px: 3; --py: -5; --ps: -.1; --po: -.4; --ax: 1.8; --ay: -1.6; --dur: 36s; --del: -11s; }
+.lg-coral   { --c: 226 94 62;   --a: .8;  --x: 5%;   --y: 46%;  --w: 76%;  --h: 82%;  --par: 2.2; --px: 4; --py: -6; --po: 0; --ax: -1.4; --ay: 1.6; --dur: 29s; --del: -3s; opacity: calc(var(--p, 0) * .62); }
+.lg-violet  { --c: 98 44 112;   --a: .82; --x: 104%; --y: 54%;  --w: 74%;  --h: 82%;  --par: 3;   --py: 2;  --ax: -1.6; --ay: 1.8;  --dur: 38s; --del: -17s; }
+.lg-blue    { --c: 36 48 116;   --a: .92; --x: 99%;  --y: 2%;   --w: 66%;  --h: 106%; --par: 3.6; --px: -3; --py: 6; --ps: .28; --ax: -1.2; --ay: 2; --dur: 34s; --del: -9s; }
+.lg-magenta { --c: 136 24 98;   --a: .96; --x: 63%;  --y: 17%;  --w: 78%;  --h: 100%; --par: 2.6; --px: -4; --py: 5; --ps: .32; rotate: 12deg; --ax: 1.8; --ay: 1.4; --ar: 3deg; --dur: 33s; --del: -14s; }
+.lg-hot     { --c: 156 20 112;  --a: .62; --x: 69%;  --y: 23%;  --w: 44%;  --h: 62%;  --par: 3.2; --px: -3; --py: 4; --ps: .5; --po: .25; rotate: 14deg; --ax: -1.4; --ay: 1.2; --dur: 27s; --del: -5s; }
+
+/* cantos pretos (inferior-direito) e brilho que segue o cursor */
+.lg-shade {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse 62% 58% at 100% 100%, rgb(4 3 3 / .96), rgb(4 3 3 / .6) 45%, transparent 100%),
+    radial-gradient(ellipse 40% 34% at 0% 0%, rgb(11 9 7 / .85), transparent 100%);
+}
+.lg-glow {
+  --c: 255 190 140; --a: .17; --w: calc(58 * var(--u)); --h: calc(58 * var(--u));
+  translate: calc(var(--mx, 0) * 50 * var(--cw)) calc(var(--my, 0) * 50 * var(--ch));
+  scale: 1; opacity: var(--pa, 1); animation: none; will-change: transform;
+}
+@media (hover: none) { .lg-glow { display: none; } }
+
+/* granulado fino (<6%): só dither contra o "banding" dos pretos, não textura */
+.lg::after {
+  content: ""; position: absolute; inset: 0; opacity: .05; pointer-events: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n' x='0' y='0' width='100%' height='100%'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 1.6 -.45'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  background-size: 220px 220px;
+}
+
+/* --- composição em retrato (celular, ou qualquer contêiner mais alto que largo) --- */
+@container lg (max-aspect-ratio: 1/1) {
+  .lg-olive   { --x: 0%;   --y: 101%; --w: 118%; --h: 40%; }
+  .lg-orange  { --x: 0%;   --y: 57%;  --w: 112%; --h: 62%; }
+  .lg-coral   { --x: 2%;   --y: 47%;  --w: 100%; --h: 52%; }
+  .lg-violet  { --x: 104%; --y: 46%;  --w: 96%;  --h: 40%; }
+  .lg-blue    { --x: 100%; --y: 6%;   --w: 96%;  --h: 52%; }
+  .lg-magenta { --x: 66%;  --y: 16%;  --w: 112%; --h: 50%; }
+  .lg-hot     { --x: 70%;  --y: 20%;  --w: 66%;  --h: 30%; }
+  .lg-shade   { background:
+    radial-gradient(ellipse 80% 40% at 100% 100%, rgb(4 3 3 / .96), rgb(4 3 3 / .6) 45%, transparent 100%),
+    radial-gradient(ellipse 60% 24% at 0% 0%, rgb(11 9 7 / .85), transparent 100%); }
+  .lg-glow    { --w: calc(80 * var(--cw)); --h: calc(80 * var(--cw)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lg-b { animation: none; }
+}
+
+/* -------------------------------------------------------------------------
+   SpaceScene
+   Azul-esverdeado desaturado da janela do pôster: topo #2a343b, meio #2e3c44,
+   inferior #313442, Via Láctea #484f60.
+   ------------------------------------------------------------------------- */
+.sp {
+  position: absolute; inset: 0; overflow: hidden; isolation: isolate; pointer-events: none;
+  background:
+    linear-gradient(to bottom, transparent 62%, rgb(66 44 66 / .16) 100%),
+    radial-gradient(ellipse 95% 85% at 52% 36%, #2f3e46 0%, #2b383f 38%, #243038 72%, #1b242b 100%);
+}
+.sp-milky {
+  position: absolute; inset: -5%; width: 110%; height: 110%; max-width: none;
+  opacity: 0; transition: opacity 1.8s ease;
+  translate: calc(var(--mx, 0) * -1.6%) calc(var(--my, 0) * -1.6%);
+  animation: sp-drift 52s ease-in-out infinite alternate;
+  will-change: transform;
+}
+.sp-stars {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  opacity: 0; transition: opacity 1.4s ease;
+}
+.sp[data-ready] .sp-milky, .sp[data-ready] .sp-stars { opacity: 1; }
+.sp-vignette {
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse 80% 76% at 50% 46%, transparent 52%, rgb(7 10 13 / .5) 82%, rgb(5 8 10 / .78) 100%);
+}
+@keyframes sp-drift {
+  from { transform: rotate(-.7deg) scale(1.01) translate3d(-.6%, .4%, 0); }
+  to   { transform: rotate(.7deg) scale(1.03) translate3d(.6%, -.4%, 0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sp-milky { animation: none; transition: none; }
+  .sp-stars { transition: none; }
+}
