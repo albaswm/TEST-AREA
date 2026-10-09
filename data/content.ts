@@ -40,3 +40,22 @@ export const contact = {
   whatsapp: "https://wa.me/55XXXXXXXXXXX",
   instagram: "https://instagram.com/",
 } as const;
+
+export type Poster = {
+  id: string;
+  series: string;
+  title: string;
+  alt: string;
+  /** caminho em /public (ex.: "/posters/humanizacao-1.webp"); sem src mostra o espaço reservado */
+  src?: string;
+};
+
+// TODO: preencher `src` quando as imagens otimizadas forem adicionadas em public/posters/
+export const posters: readonly Poster[] = [
+  { id: "hum-1", series: "Humanização", title: "Humanização 1", alt: "Poster Trills — série Humanização, versão 1" },
+  { id: "hum-2", series: "Humanização", title: "Humanização 2", alt: "Poster Trills — série Humanização, versão 2" },
+  { id: "hum-3", series: "Humanização", title: "Humanização 3", alt: "Poster Trills — série Humanização, versão 3" },
+  { id: "mqe-1", series: "Mais que edição", title: "Mais que edição", alt: "Poster Trills — Mais que edição" },
+  { id: "mqe-2", series: "Mais que edição", title: "Mais que edição II", alt: "Poster Trills — Mais que edição, segunda versão" },
+  { id: "mural", series: "Mural", title: "Mural", alt: "Mural Trills" },
+];

@@ -26,6 +26,7 @@ export default function Header() {
         <a href="#servicos">Serviços</a>
         <a href="#processo">Processo</a>
         <a href="#portfolio">Portfólio</a>
+        <a href="#universo">Universo</a>
         <a href="#sobre">Sobre</a>
         <a className="btn btn-sm" href="#contato">Fale com a gente</a>
       </nav>

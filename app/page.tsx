@@ -1,6 +1,7 @@
 import Footer from "@/components/Footer";
+import PosterGallery from "@/components/PosterGallery";
 import Stage from "@/components/Stage";
-import { contact, extraSteps, marquee, portfolio, process, scenes, values } from "@/data/content";
+import { contact, extraSteps, marquee, portfolio, posters, process, scenes, values } from "@/data/content";
 
 const marqueeLoop = [...marquee, ...marquee];
 
@@ -78,6 +79,18 @@ export default function Home() {
               </a>
             ))}
           </div>
+        </div>
+      </section>
+
+      <section id="universo" className="section universe">
+        <div className="wrap">
+          <p className="eyebrow">Universo Trills</p>
+          <h2 className="reveal">Um universo possível.</h2>
+          <p className="universe-text reveal">
+            O cubo é a nossa referência-chave: a câmara obscura, os mundos improváveis de Escher e a força da união entre
+            criatividade, conhecimento e parcerias. Estes posters são a Trills em forma de imagem.
+          </p>
+          <PosterGallery posters={posters} />
         </div>
       </section>
 
