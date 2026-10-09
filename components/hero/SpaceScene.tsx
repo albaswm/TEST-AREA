@@ -139,15 +139,15 @@ function paintMilky(cv: HTMLCanvasElement, W: number, H: number) {
       const core = Math.exp(-q * q * 1.25);
       const halo = Math.exp(-q * q * 0.28) * 0.35;
       // variação de brilho ao longo da faixa + poeira
-      const along = 0.62 + 0.55 * fbm(t / bwc * 0.55 + 1.7, q * 0.4, 23, 3);
-      const cloud = 0.45 + 0.85 * fbm(sx * 2.4 + 9.2, sy * 2.4 + 1.3, 31, 4);
+      const along = 0.7 + 0.5 * fbm(t / bwc * 0.55 + 1.7, q * 0.4, 23, 3);
+      const cloud = 0.62 + 0.7 * fbm(sx * 2.4 + 9.2, sy * 2.4 + 1.3, 31, 4);
       // veios escuros (poeira) cruzando o núcleo
-      const lane = Math.max(0, fbm(t / bwc * 1.3 + 4.4, q * 1.6 + 2.2, 47, 3) - 0.56) * 3.2;
+      const lane = Math.max(0, fbm(t / bwc * 1.3 + 4.4, q * 1.6 + 2.2, 47, 3) - 0.58) * 2.2;
       let d = (core * along + halo) * cloud * (1 - Math.min(0.75, lane));
       // some suavemente nas pontas da faixa
       const e = t / len;
       d *= Math.min(1, Math.max(0, e + 0.1) * 6) * Math.min(1, Math.max(0, 1.1 - e) * 6);
-      const alpha = Math.min(0.34, d * 0.3);
+      const alpha = Math.min(0.3, d * 0.27);
       const warm = fbm(sx * 1.1 + 5.5, sy * 1.1 + 8.1, 59, 2);
       const o = (j * w + i) * 4;
       data[o] = 118 + 34 * warm;
@@ -292,15 +292,15 @@ export default function SpaceScene({ className, density = 1, milkyWay = true }: 
       const area = (W * H) / 1e6;
       const dn = Math.max(0.2, density);
       const rand = mulberry32(20240611);
-      const nFar = Math.round(Math.min(1100, Math.max(260, area * 430)) * dn);
-      const nBand = Math.round(Math.min(900, Math.max(220, area * 330)) * dn);
+      const nFar = Math.round(Math.min(1500, Math.max(360, area * 700)) * dn);
+      const nBand = Math.round(Math.min(1200, Math.max(300, area * 620)) * dn);
       const nMid = Math.round(Math.min(380, Math.max(90, area * 150)) * dn);
       const nNear = Math.round(Math.min(70, Math.max(18, area * 30)) * dn);
       layers = [
-        makeLayer(rand, nFar, { rMin: 0.32, rMax: 0.7, aMin: 0.22, aMax: 0.6, twFrac: 0.3, par: 0.004, speed: 0.00035 }),
-        makeLayer(rand, milkyWay ? nBand : 0, { rMin: 0.3, rMax: 0.62, aMin: 0.2, aMax: 0.55, twFrac: 0.3, par: 0.005, speed: 0.00038, band: { W, H } }),
-        makeLayer(rand, nMid, { rMin: 0.6, rMax: 1.15, aMin: 0.38, aMax: 0.8, twFrac: 0.4, par: 0.011, speed: 0.0009 }),
-        makeLayer(rand, nNear, { rMin: 1.0, rMax: 1.8, aMin: 0.55, aMax: 1, twFrac: 0.55, par: 0.026, speed: 0.0019, glow: true }),
+        makeLayer(rand, nFar, { rMin: 0.6, rMax: 1.0, aMin: 0.28, aMax: 0.72, twFrac: 0.3, par: 0.004, speed: 0.00035 }),
+        makeLayer(rand, milkyWay ? nBand : 0, { rMin: 0.55, rMax: 0.95, aMin: 0.3, aMax: 0.78, twFrac: 0.3, par: 0.005, speed: 0.00038, band: { W, H } }),
+        makeLayer(rand, nMid, { rMin: 0.95, rMax: 1.6, aMin: 0.45, aMax: 0.9, twFrac: 0.4, par: 0.011, speed: 0.0009 }),
+        makeLayer(rand, nNear, { rMin: 1.4, rMax: 2.5, aMin: 0.6, aMax: 1, twFrac: 0.55, par: 0.026, speed: 0.0019, glow: true }),
       ];
     };
 

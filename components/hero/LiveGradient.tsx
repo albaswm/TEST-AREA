@@ -20,7 +20,8 @@ export default function LiveGradient({ className }: { className?: string }) {
       <i className="lg-b lg-blue" />
       <i className="lg-b lg-magenta" />
       <i className="lg-b lg-hot" />
-      <i className="lg-shade" />
+      <i className="lg-b lg-shade lg-shade-l" />
+      <i className="lg-b lg-shade lg-shade-r" />
       <i className="lg-b lg-glow" />
     </div>
   );

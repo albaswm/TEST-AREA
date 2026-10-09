@@ -1,0 +1,83 @@
+/* ==========================================================================
+   Abertura (Sessão 1) — palco fixo conduzido pela rolagem.
+   Estados:
+   - padrão (sem JS ou prefers-reduced-motion): 100svh, personagem inteiro e estático sobre o degradê, sem texto;
+   - html.hero-active (classe posta por script no <head>, só com JS e sem movimento reduzido): seção alta com pin.
+   Variáveis no [data-hero-root]: --p (progresso), --mx/--my (ponteiro suavizado).
+   ========================================================================== */
+
+.hero-seq { position: relative; height: 100svh; background: #0b0907; }
+.hero-active .hero-seq { height: 480svh; }
+
+.hs-stage { position: relative; height: 100svh; overflow: hidden; isolation: isolate; background: #0b0907; }
+.hero-active .hs-stage { position: sticky; top: 0; }
+
+/* título semântico só para leitores de tela / busca (nunca visível) */
+.hs-sr { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; border: 0; font-size: 1px; line-height: 1; color: transparent; }
+
+.hs-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
+.hs-under { position: absolute; inset: 0; }
+
+/* ---------- o pôster como mundo: 1414x2000 escalado, busto centralizado, ombros saindo pela base ---------- */
+.hs-world {
+  --wh: 125svh;                                   /* altura do pôster: cabeça ~44% da altura da tela */
+  --ww: calc(var(--wh) * 0.70714);                /* 1414 / 2000 */
+  position: absolute; width: var(--ww); height: var(--wh);
+  left: calc(50% - var(--ww) * 0.60113);          /* centro da cabeça (x=850) no centro da tela */
+  top: calc(100% + 36px - var(--wh));             /* rodapé do pôster 36px abaixo da base (nunca aparece o corte) */
+  pointer-events: none; will-change: transform;
+}
+@media (max-aspect-ratio: 1/1) {
+  .hs-world { --wh: min(272vw, 128svh); top: calc(100% + 14px - var(--wh)); }   /* retrato: escala maior, rosto no terço superior */
+}
+.hs-tilt { position: absolute; inset: 0; will-change: transform; }
+.hs-layer { position: absolute; inset: 0; width: 100%; height: 100%; display: block; max-width: none; user-select: none; -webkit-user-drag: none; }
+
+/* a face fechada sobre a janela (estado "pessoa inteira"); o JS assume o transform */
+.hs-facegrp { position: absolute; inset: 0; transform: translate(12.871%, 2.35%); will-change: transform; }
+.hs-face-rim, .hs-face-blur, .hs-shadow { opacity: 0; }
+.hs-shadow { will-change: transform, opacity; }
+
+/* nascimento do personagem: por tempo, não por rolagem (só quando o JS está ativo) */
+@keyframes hs-in-a { from { opacity: 0; translate: 0 5svh; } to { opacity: 1; translate: 0 0; } }
+@keyframes hs-in-b { from { opacity: 0; translate: 0 5svh; } to { opacity: 1; translate: 0 0; } }
+.hero-active .hs-world { opacity: 0; animation: hs-in-a 1.4s cubic-bezier(.16, 1, .3, 1) 3.2s both; }   /* rede de segurança */
+.hero-active .hero-seq.is-in .hs-world { animation: hs-in-b 1.4s cubic-bezier(.16, 1, .3, 1) .5s both; }
+
+/* ---------- cubos de vidro (aparecem com a rolagem) ---------- */
+.hs-cubes { position: absolute; inset: 0; pointer-events: none; visibility: hidden; opacity: 0; will-change: transform, opacity; }
+@media (max-aspect-ratio: 1/1) { .hs-cubes .dw { scale: .62; } }
+
+/* ---------- o outro fundo: o espaço, revelado pela janela ---------- */
+.hs-space { position: absolute; inset: 0; display: none; opacity: 0; clip-path: url(#hs-window); pointer-events: none; }
+.hs-space-in { position: absolute; inset: 0; will-change: transform; }
+.hero-seq.hs-warm .hs-space { display: block; visibility: hidden; }      /* aquece (tamanho e estrelas) e depois sai de cena */
+.hero-seq.hs-space-on .hs-space { display: block; visibility: visible; }
+.hero-seq.hs-covered .hs-space { clip-path: none; opacity: 1 !important; }
+.hero-seq.hs-covered .hs-under, .hero-seq.hs-covered .hs-world, .hero-seq.hs-covered .hs-cubes, .hero-seq.hs-covered .hs-rim { visibility: hidden; }
+
+/* fio de luz no contorno da janela enquanto ela abre */
+.hs-rim { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; opacity: 0; }
+.hs-rim-path { fill: none; stroke: rgba(255, 226, 238, .8); stroke-width: 1.6px; vector-effect: non-scaling-stroke; }
+
+/* ---------- pista de rolagem sem letras: fio fino com um ponto que desce ---------- */
+.hs-cue { display: none; position: absolute; left: 50%; bottom: max(22px, env(safe-area-inset-bottom)); width: 1px; height: 58px; translate: -50% 0; pointer-events: none; }
+.hero-active .hs-cue { display: block; }
+.hs-cue::before, .hs-cue::after { content: ""; position: absolute; left: 0; opacity: 0; }
+.hs-cue::before { top: 0; width: 1px; height: 100%; background: linear-gradient(rgba(255, 255, 255, 0), rgba(255, 255, 255, .42)); animation: hs-cue-in 1s ease 3s both; }
+.hs-cue::after { top: 0; width: 5px; height: 5px; margin-left: -2px; border-radius: 50%; background: #fff; box-shadow: 0 0 10px rgba(255, 255, 255, .7); animation: hs-cue-dot 2.4s cubic-bezier(.6, 0, .25, 1) 3.4s infinite both; }
+@keyframes hs-cue-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes hs-cue-dot { 0% { opacity: 0; transform: translateY(0); } 18% { opacity: 1; } 75% { opacity: 1; } 100% { opacity: 0; transform: translateY(54px); } }
+
+/* ---------- cabeçalho: oculto na abertura, entra (slide/fade) ao final ---------- */
+.hero-active .nav { transition: opacity .7s ease, translate .8s cubic-bezier(.16, 1, .3, 1), visibility 0s linear 0s; }
+.hero-active:not(.hero-done) .nav { opacity: 0; translate: 0 -100%; visibility: hidden; pointer-events: none; transition: opacity .45s ease, translate .6s ease, visibility 0s linear .6s; }
+
+/* ---------- movimento reduzido: personagem inteiro, estático, sem texto, com o cabeçalho visível ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .hero-seq { height: 100svh !important; }
+  .hs-stage { position: relative !important; }
+  .hs-world { animation: none !important; opacity: 1 !important; }
+  .hs-space, .hs-cubes, .hs-rim, .hs-cue { display: none !important; }
+  .nav { opacity: 1 !important; translate: none !important; visibility: visible !important; pointer-events: auto !important; }
+}

@@ -1,8 +1,9 @@
-import CubeField from "@/components/CubeField";
 import Footer from "@/components/Footer";
 import GradientField from "@/components/GradientField";
-import Portal from "@/components/Portal";
-import Teaser from "@/components/Teaser";
+import HeroCubes from "@/components/hero/HeroCubes";
+import HeroSequence from "@/components/hero/HeroSequence";
+import LiveGradient from "@/components/hero/LiveGradient";
+import SpaceScene from "@/components/hero/SpaceScene";
 import PosterGallery from "@/components/PosterGallery";
 import Stage from "@/components/Stage";
 import { contact, extraSteps, marquee, portfolio, posters, process, scenes, values } from "@/data/content";
@@ -12,27 +13,11 @@ const marqueeLoop = [...marquee, ...marquee];
 export default function Home() {
   return (
     <>
-      <Portal
-        base={
-          <>
-            <GradientField />
-            <CubeField />
-            <div className="hero-copy">
-              <p className="eyebrow">Produtora audiovisual · Pós-produção</p>
-              <h1>Damos <em>forma</em> e <em>movimento</em> ao seu conteúdo.</h1>
-              <p className="lead">
-                Criamos conteúdos que atraem, inspiram e motivam pessoas. Edição, motion, cor e som — e, se precisar,
-                também cuidamos da produção.
-              </p>
-              <div className="actions">
-                <a className="btn" href="#contato">Pedir orçamento</a>
-                <a className="btn btn-ghost" href="#universo">Ver o universo</a>
-              </div>
-              <p className="scroll-hint" aria-hidden="true">Role para entrar ↓</p>
-            </div>
-          </>
-        }
-        reveal={<Teaser />}
+      <HeroSequence
+        gradient={<LiveGradient />}
+        cubesBack={<HeroCubes layer="back" />}
+        cubesFront={<HeroCubes layer="front" />}
+        space={<SpaceScene density={1.6} />}
       />
 
       <section className="marquee" aria-hidden="true">

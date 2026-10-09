@@ -25,7 +25,7 @@
 /* mancha: elipse que ocupa a caixa (closest-side) com queda suave, sem filter:blur */
 .lg-b {
   --x: 50%; --y: 50%; --w: 60%; --h: 60%; --c: 255 255 255; --a: 1;
-  --par: 0; --px: 0; --py: 0; --ps: 0; --po: 0; --ax: 1; --ay: 1; --ar: 0deg; --as: 1;
+  --rot: 0deg; --par: 0; --px: 0; --py: 0; --ps: 0; --po: 0; --ax: 1; --ay: 1; --ar: 0deg; --as: 1;
   --dur: 30s; --del: 0s;
   position: absolute; left: calc(var(--x) - var(--w) / 2); top: calc(var(--y) - var(--h) / 2);
   width: var(--w); height: var(--h);
@@ -45,6 +45,7 @@
   translate:
     calc(var(--mx, 0) * var(--par) * var(--u) * -1 + var(--p, 0) * var(--px) * var(--u))
     calc(var(--my, 0) * var(--par) * var(--u) * -1 + var(--p, 0) * var(--py) * var(--u));
+  rotate: var(--rot);
   scale: calc(1 + var(--p, 0) * var(--ps));
   opacity: calc(1 + var(--p, 0) * var(--po));
   /* deriva ociosa muito lenta */
@@ -56,24 +57,25 @@
   to   { transform: translate3d(calc(var(--ax) * var(--u)), calc(var(--ay) * var(--u)), 0) rotate(var(--ar)) scale(var(--as)); }
 }
 
-/* --- composição em paisagem (padrão) --- */
-.lg-olive   { --c: 198 162 80;  --a: .94; --x: 0%;   --y: 106%; --w: 78%;  --h: 76%;  --par: 1.2; --po: -.45; --py: 3;  --ax: 1.2;  --ay: -1.4; --dur: 31s; --del: -6s; }
-.lg-orange  { --c: 233 138 74;  --a: .98; --x: 3%;   --y: 58%;  --w: 84%;  --h: 98%;  --par: 1.8; --px: 3; --py: -5; --ps: -.1; --po: -.4; --ax: 1.8; --ay: -1.6; --dur: 36s; --del: -11s; }
-.lg-coral   { --c: 226 94 62;   --a: .8;  --x: 5%;   --y: 46%;  --w: 76%;  --h: 82%;  --par: 2.2; --px: 4; --py: -6; --po: 0; --ax: -1.4; --ay: 1.6; --dur: 29s; --del: -3s; opacity: calc(var(--p, 0) * .62); }
-.lg-violet  { --c: 98 44 112;   --a: .82; --x: 104%; --y: 54%;  --w: 74%;  --h: 82%;  --par: 3;   --py: 2;  --ax: -1.6; --ay: 1.8;  --dur: 38s; --del: -17s; }
-.lg-blue    { --c: 36 48 116;   --a: .92; --x: 99%;  --y: 2%;   --w: 66%;  --h: 106%; --par: 3.6; --px: -3; --py: 6; --ps: .28; --ax: -1.2; --ay: 2; --dur: 34s; --del: -9s; }
-.lg-magenta { --c: 136 24 98;   --a: .96; --x: 63%;  --y: 17%;  --w: 78%;  --h: 100%; --par: 2.6; --px: -4; --py: 5; --ps: .32; rotate: 12deg; --ax: 1.8; --ay: 1.4; --ar: 3deg; --dur: 33s; --del: -14s; }
-.lg-hot     { --c: 156 20 112;  --a: .62; --x: 69%;  --y: 23%;  --w: 44%;  --h: 62%;  --par: 3.2; --px: -3; --py: 4; --ps: .5; --po: .25; rotate: 14deg; --ax: -1.4; --ay: 1.2; --dur: 27s; --del: -5s; }
+/* --- composição em paisagem (padrão) ---
+   x/y = centro e w/h = tamanho, em % do contêiner; rot = inclinação. Valores ajustados por mínimos quadrados
+   contra o fundo do pôster (somente pixels sem o personagem), com o pôster esticado para 16:10. */
+.lg-olive   { --c: 198 162 80; --a: 1.0; --x: 13.5%; --y: 81.1%; --w: 104.2%; --h: 80.0%; --rot: -14.5deg; --par: 1.2; --po: -.3; --py: 3; --ax: 1.2; --ay: -1.4; --dur: 31s; --del: -6s; }
+.lg-orange  { --c: 233 138 74; --a: 1.0; --x: 6.0%; --y: 51.4%; --w: 102.7%; --h: 99.8%; --rot: 6.9deg; --par: 1.8; --px: 3; --py: -5; --ps: -.1; --po: -.12; --ax: 1.8; --ay: -1.6; --dur: 36s; --del: -11s; }
+.lg-coral   { --c: 240 98 64; --a: .8; --x: 9%; --y: 44%; --w: 84%; --h: 80%; --rot: 6.9deg; --par: 2.2; --px: 4; --py: -6; --ax: -1.4; --ay: 1.6; --dur: 29s; --del: -3s; opacity: calc(var(--p, 0) * .5); }
+.lg-violet  { --c: 98 44 112; --a: 1.0; --x: 100.5%; --y: 43.5%; --w: 74.1%; --h: 76.7%; --rot: -30.0deg; --par: 3; --py: 2; --ax: -1.6; --ay: 1.8; --dur: 38s; --del: -17s; }
+.lg-blue    { --c: 36 48 116; --a: 1.0; --x: 86.1%; --y: 18.9%; --w: 56.8%; --h: 148.1%; --rot: -30.0deg; --par: 3.6; --px: -3; --py: 6; --ps: .28; --ax: -1.2; --ay: 2; --dur: 34s; --del: -9s; }
+.lg-magenta { --c: 136 24 98; --a: 0.85; --x: 63.2%; --y: 8.2%; --w: 58.4%; --h: 80.2%; --rot: 30.0deg; --par: 2.6; --px: -4; --py: 5; --ps: .32; --ax: 1.8; --ay: 1.4; --ar: 3deg; --dur: 33s; --del: -14s; }
+.lg-hot     { --c: 156 20 112; --a: 0.78; --x: 76.3%; --y: 25.3%; --w: 71.5%; --h: 42.1%; --rot: 30.0deg; --par: 3.2; --px: -3; --py: 4; --ps: .5; --po: .25; --ax: -1.4; --ay: 1.2; --dur: 27s; --del: -5s; }
 
-/* cantos pretos (inferior-direito) e brilho que segue o cursor */
-.lg-shade {
-  position: absolute; inset: 0;
-  background:
-    radial-gradient(ellipse 62% 58% at 100% 100%, rgb(4 3 3 / .96), rgb(4 3 3 / .6) 45%, transparent 100%),
-    radial-gradient(ellipse 40% 34% at 0% 0%, rgb(11 9 7 / .85), transparent 100%);
-}
+/* cantos escuros do pôster: o inferior-esquerdo suaviza o oliva, o inferior-direito é preto */
+.lg-shade   { --c: 5 4 3; animation: none; will-change: auto; }
+.lg-shade-l { --a: .36; --x: -2%; --y: 100%; --w: 42%; --h: 44%; }
+.lg-shade-r { --a: 0.95; --x: 99.1%; --y: 88.6%; --w: 30.0%; --h: 89.7%; --rot: -30.0deg; }
+
+/* brilho que segue o cursor */
 .lg-glow {
-  --c: 255 190 140; --a: .17; --w: calc(58 * var(--u)); --h: calc(58 * var(--u));
+  --c: 255 176 150; --a: .15; --w: calc(58 * var(--u)); --h: calc(58 * var(--u));
   translate: calc(var(--mx, 0) * 50 * var(--cw)) calc(var(--my, 0) * 50 * var(--ch));
   scale: 1; opacity: var(--pa, 1); animation: none; will-change: transform;
 }
@@ -86,18 +88,17 @@
   background-size: 220px 220px;
 }
 
-/* --- composição em retrato (celular, ou qualquer contêiner mais alto que largo) --- */
+/* --- composição em retrato (celular, ou qualquer contêiner mais alto que largo): proporção do próprio pôster --- */
 @container lg (max-aspect-ratio: 1/1) {
-  .lg-olive   { --x: 0%;   --y: 101%; --w: 118%; --h: 40%; }
-  .lg-orange  { --x: 0%;   --y: 57%;  --w: 112%; --h: 62%; }
-  .lg-coral   { --x: 2%;   --y: 47%;  --w: 100%; --h: 52%; }
-  .lg-violet  { --x: 104%; --y: 46%;  --w: 96%;  --h: 40%; }
-  .lg-blue    { --x: 100%; --y: 6%;   --w: 96%;  --h: 52%; }
-  .lg-magenta { --x: 66%;  --y: 16%;  --w: 112%; --h: 50%; }
-  .lg-hot     { --x: 70%;  --y: 20%;  --w: 66%;  --h: 30%; }
-  .lg-shade   { background:
-    radial-gradient(ellipse 80% 40% at 100% 100%, rgb(4 3 3 / .96), rgb(4 3 3 / .6) 45%, transparent 100%),
-    radial-gradient(ellipse 60% 24% at 0% 0%, rgb(11 9 7 / .85), transparent 100%); }
+  .lg-olive   { --x: 13.4%; --y: 81.1%; --w: 80.7%; --h: 80.0%; --rot: 20.0deg; --a: 1.0; }
+  .lg-orange  { --x: 6.4%; --y: 52.2%; --w: 101.6%; --h: 107.0%; --rot: -14.1deg; --a: 1.0; }
+  .lg-coral   { --x: 9%; --y: 44%; --w: 86%; --h: 84%; --rot: -14.1deg; }
+  .lg-violet  { --x: 100.0%; --y: 43.1%; --w: 55.9%; --h: 86.9%; --rot: 18.5deg; --a: 1.0; }
+  .lg-blue    { --x: 87.4%; --y: 19.6%; --w: 67.6%; --h: 150.0%; --rot: -22.0deg; --a: 1.0; }
+  .lg-magenta { --x: 63.1%; --y: 10.0%; --w: 54.9%; --h: 73.0%; --rot: -6.6deg; --a: 0.83; }
+  .lg-hot     { --x: 76.5%; --y: 24.4%; --w: 36.8%; --h: 81.2%; --rot: -29.9deg; --a: 0.77; }
+  .lg-shade-l { --x: -2%; --y: 100%; --w: 70%; --h: 26%; }
+  .lg-shade-r { --x: 98.5%; --y: 88.8%; --w: 31.5%; --h: 58.5%; --rot: -5.0deg; --a: 0.91; }
   .lg-glow    { --w: calc(80 * var(--cw)); --h: calc(80 * var(--cw)); }
 }
 
